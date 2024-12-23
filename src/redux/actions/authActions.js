@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create a base axios instance with the correct base URL
 const API_BASE_URL = 'https://loan-server-three.vercel.app/api';
 
-export const loginUser = (userData) => async (dispatch) => {
+export const login = (userData) => async (dispatch) => {
   try {
     dispatch({ type: 'LOGIN_REQUEST' });
     
@@ -29,7 +29,7 @@ export const loginUser = (userData) => async (dispatch) => {
   }
 };
 
-export const logoutUser = () => async (dispatch) => {
+export const logout = () => async (dispatch) => {
   try {
     await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
       withCredentials: true
