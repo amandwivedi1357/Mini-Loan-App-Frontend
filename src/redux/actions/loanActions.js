@@ -1,61 +1,52 @@
 import axios from 'axios';
-import {
-  FETCH_LOANS_REQUEST,
-  FETCH_LOANS_SUCCESS,
-  FETCH_LOANS_FAILURE,
-  CREATE_LOAN_REQUEST,
-  CREATE_LOAN_SUCCESS,
-  CREATE_LOAN_FAILURE,
-  UPDATE_LOAN_STATUS
-} from './types';
-const BASE_URL = 'https://loan-server-three.vercel.app'
-export const fetchLoans = () => async (dispatch) => {
-  dispatch({ type: FETCH_LOANS_REQUEST });
-  try {
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    
-    const { data } = await axios.get(`${BASE_URL}/api/loans`, config);
-    dispatch({ type: FETCH_LOANS_SUCCESS, payload: data });
-  } catch (error) {
-    dispatch({ 
-      type: FETCH_LOANS_FAILURE, 
-      payload: error.response?.data?.message || 'Failed to fetch loans' 
-    });
-  }
-};
+
+const API_BASE_URL = 'https://loan-server-three.vercel.app/api';
 
 export const createLoan = (loanData) => async (dispatch) => {
-  dispatch({ type: CREATE_LOAN_REQUEST });
   try {
-    const { data } = await axios.post(`${BASE_URL}/api/loans`, loanData);
-    dispatch({ type: CREATE_LOAN_SUCCESS, payload: data });
-    return data;
+    dispatch({ type: 'LOAN_CREATE_REQUEST' });
+    
+    const response = await axios.post(`${API_BASE_URL}/loans/create`, loanData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true
+    });
+
+    dispatch({
+      type: 'LOAN_CREATE_SUCCESS',
+      payload: response.data
+    });
+
+    return response.data;
   } catch (error) {
-    dispatch({ 
-      type: CREATE_LOAN_FAILURE, 
-      payload: error.response?.data?.message || 'Failed to create loan' 
+    dispatch({
+      type: 'LOAN_CREATE_FAIL',
+      payload: error.response?.data?.message || 'Loan creation failed'
     });
     throw error;
   }
 };
 
-export const updateLoanStatus = (loanId, status) => async (dispatch) => {
+export const fetchLoans = () => async (dispatch) => {
   try {
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const { data } = await axios.patch(`${BASE_URL}/api/loans/${loanId}/status`, { status }, config);
-    dispatch({ type: UPDATE_LOAN_STATUS, payload: data });
-    return data;
+    dispatch({ type: 'LOANS_FETCH_REQUEST' });
+    
+    const response = await axios.get(`${API_BASE_URL}/loans`, {
+      withCredentials: true
+    });
+
+    dispatch({
+      type: 'LOANS_FETCH_SUCCESS',
+      payload: response.data
+    });
+
+    return response.data;
   } catch (error) {
+    dispatch({
+      type: 'LOANS_FETCH_FAIL',
+      payload: error.response?.data?.message || 'Failed to fetch loans'
+    });
     throw error;
   }
 };

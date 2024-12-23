@@ -1,27 +1,42 @@
 import axios from 'axios';
-import { LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT } from './types';
 
-//const BASE_URL = 'https://mini-loan-app123--mauve.vercel.app/'
- const BASE_URL = 'https://loan-server-three.vercel.app'
+// Create a base axios instance with the correct base URL
+const API_BASE_URL = 'https://loan-server-three.vercel.app/api';
 
-export const login = (email, password) => async (dispatch) => {
-  dispatch({ type: LOGIN_REQUEST });
+export const loginUser = (userData) => async (dispatch) => {
   try {
-    const { data } = await axios.post(`${BASE_URL}/api/auth/login`, { email, password });
-    localStorage.setItem('token', data.token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    console.log(data)
-    dispatch({ type: LOGIN_SUCCESS, payload: data });
-  } catch (error) {
-    dispatch({ 
-      type: LOGIN_FAILURE, 
-      payload: error.response?.data?.message || 'Login failed' 
+    dispatch({ type: 'LOGIN_REQUEST' });
+    
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, userData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true  // Important for handling cookies and CORS
     });
+
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      payload: response.data
+    });
+
+    return response.data;
+  } catch (error) {
+    dispatch({
+      type: 'LOGIN_FAIL',
+      payload: error.response?.data?.message || 'Login failed'
+    });
+    throw error;
   }
 };
 
-export const logout = () => (dispatch) => {
-  localStorage.removeItem('token');
-  delete axios.defaults.headers.common['Authorization'];
-  dispatch({ type: LOGOUT });
+export const logoutUser = () => async (dispatch) => {
+  try {
+    await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+      withCredentials: true
+    });
+
+    dispatch({ type: 'LOGOUT_SUCCESS' });
+  } catch (error) {
+    console.error('Logout failed', error);
+  }
 };
